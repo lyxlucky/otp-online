@@ -21,7 +21,7 @@ export default function CardOtpShow({ secret, title }: { secret: string, title: 
 
     // 计算剩余有效期的函数
     const calculateRemainingTime = () => {
-        const step = authenticator?.options?.step; // 获取时间窗口（默认 30 秒）
+        const step = (authenticator?.options?.step as number) || 30; // 获取时间窗口（默认 30 秒）
         const currentTime = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
         const timeCounter = Math.floor(currentTime / step); // 当前时间计数器
         const nextWindowTime = (timeCounter + 1) * step; // 下一个时间窗口的时间戳
