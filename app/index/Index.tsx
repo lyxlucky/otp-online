@@ -12,8 +12,6 @@ export default async function Index() {
   ]
 
   async function fetchData() {
-    // 示例：使用 fetch 从 API 获取数据
-    // const res = await fetch('YOUR_API_ENDPOINT');
     // if (!res.ok) {
     //   throw new Error('Failed to fetch data');
     // }
