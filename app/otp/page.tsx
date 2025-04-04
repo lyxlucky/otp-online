@@ -9,6 +9,10 @@ export default async function Index() {
       title: "中山大学附属第七医院（深圳）",
       secret: 'HA2DOMZRMI2TILLCHFRWMLJUGBRTALLCGVSGILLDGFQTEYRRGYYGIZTCG4',
     },
+    {
+      title: "email@lyxlucky.site（Github）",
+      secret: '5SNLFT45THDGSFOC',
+    },
   ]
 
   async function fetchData() {
