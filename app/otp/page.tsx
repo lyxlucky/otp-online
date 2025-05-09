@@ -7,17 +7,12 @@ export default async function Index() {
   const mockData = [
     {
       title: "中山大学附属第七医院（深圳）",
-      secret: 'HA2DOMZRMI2TILLCHFRWMLJUGBRTALLCGVSGILLDGFQTEYRRGYYGIZTCG4',
+      secret: 'GFSDEMBVGRSGGLJQMJTGCLJUGFQTILJYHAZDILJRHE3TSZJSMZRGMNJXMU',
     }
   ]
 
   async function fetchData() {
-    // if (!res.ok) {
-    //   throw new Error('Failed to fetch data');
-    // }
-    // return res.json();
     return mockData;
-    // 使用 mockData 替代实际 API 调用，方便演示
   }
 
   const data = await fetchData();

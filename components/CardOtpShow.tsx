@@ -84,7 +84,6 @@ export default function CardOtpShow({ secret, title }: { secret: string, title: 
 
     return (
         <>
-
             {contextHolder}
             {
                 <div>

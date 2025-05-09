@@ -25,11 +25,7 @@ export default function IndexLayout({ children }: { children: React.ReactNode })
                     <div className="w-full max-w-7xl">
                         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8 overflow-hidden">
                             <div className="flex flex-wrap gap-6 justify-center items-center">
-                                {React.Children.map(children, (child) => (
-                                    <div className="flex-none w-full sm:w-[calc(50%-1.5rem)] md:w-[calc(33.333%-1.5rem)] lg:w-[calc(25%-1.5rem)] bg-blue-50/50 rounded-lg p-6 border border-blue-100 overflow-hidden flex items-center justify-center">
-                                        {child}
-                                    </div>
-                                ))}
+                                {children}
                             </div>
                         </div>
                     </div>
