@@ -77,6 +77,7 @@ export default function CardOtpShow({ secret, title }: { secret: string, title: 
         }, 5000);
         return () => {
             // 在组件卸载时清除定时器
+            //
             clearTimeout(timer);
         };
     }
