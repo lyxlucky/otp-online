@@ -8,6 +8,10 @@ export default async function Index() {
     {
       title: "中山大学附属第七医院（深圳）",
       secret: 'GFSDEMBVGRSGGLJQMJTGCLJUGFQTILJYHAZDILJRHE3TSZJSMZRGMNJXMU',
+    },
+    {
+      title: "Github（mail@lyxlucky.me）",
+      secret: '5SNLFT45THDGSFOC',
     }
   ]
 
