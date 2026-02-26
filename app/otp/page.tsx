@@ -12,6 +12,10 @@ export default async function Index() {
     {
       title: "Github（mail@lyxlucky.me）",
       secret: '5SNLFT45THDGSFOC',
+    },
+    {
+      title: "SQL 工作台",
+      secret: 'JBSWY3DPEHPK3PXP',
     }
   ]
 
