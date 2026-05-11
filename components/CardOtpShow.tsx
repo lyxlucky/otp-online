@@ -2,7 +2,7 @@
 
 import { authenticator } from 'otplib';
 import { HashAlgorithms } from '@otplib/core';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message, Tooltip } from 'antd';
 import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined } from '@ant-design/icons';
 import { useNotifyEnabled } from '@/lib/useNotifyEnabled';
@@ -19,6 +19,121 @@ type Props = {
   period?: number;
   algorithm?: Algorithm | string;
 };
+
+type Palette = {
+  bar: string;
+  avatar: string;
+  ringTrack: string;
+  ringActive: string;
+  ringText: string;
+  tokenText: string;
+  chipBg: string;
+  chipText: string;
+  chipHover: string;
+  cardBorder: string;
+  cardBorderHover: string;
+  bellActiveBg: string;
+  bellActiveHover: string;
+};
+
+const PALETTES: Palette[] = [
+  {
+    bar: 'from-rose-300 to-pink-400',
+    avatar: 'from-rose-300 to-pink-400',
+    ringTrack: 'text-rose-50',
+    ringActive: 'text-rose-400',
+    ringText: 'text-rose-600',
+    tokenText: 'text-rose-900',
+    chipBg: 'bg-rose-50',
+    chipText: 'text-rose-700',
+    chipHover: 'hover:bg-rose-100',
+    cardBorder: 'border-rose-100',
+    cardBorderHover: 'hover:border-rose-200',
+    bellActiveBg: 'bg-rose-500',
+    bellActiveHover: 'hover:bg-rose-600',
+  },
+  {
+    bar: 'from-sky-300 to-blue-400',
+    avatar: 'from-sky-300 to-blue-400',
+    ringTrack: 'text-sky-50',
+    ringActive: 'text-sky-400',
+    ringText: 'text-sky-600',
+    tokenText: 'text-sky-900',
+    chipBg: 'bg-sky-50',
+    chipText: 'text-sky-700',
+    chipHover: 'hover:bg-sky-100',
+    cardBorder: 'border-sky-100',
+    cardBorderHover: 'hover:border-sky-200',
+    bellActiveBg: 'bg-sky-500',
+    bellActiveHover: 'hover:bg-sky-600',
+  },
+  {
+    bar: 'from-emerald-300 to-teal-400',
+    avatar: 'from-emerald-300 to-teal-400',
+    ringTrack: 'text-emerald-50',
+    ringActive: 'text-emerald-400',
+    ringText: 'text-emerald-600',
+    tokenText: 'text-emerald-900',
+    chipBg: 'bg-emerald-50',
+    chipText: 'text-emerald-700',
+    chipHover: 'hover:bg-emerald-100',
+    cardBorder: 'border-emerald-100',
+    cardBorderHover: 'hover:border-emerald-200',
+    bellActiveBg: 'bg-emerald-500',
+    bellActiveHover: 'hover:bg-emerald-600',
+  },
+  {
+    bar: 'from-amber-300 to-orange-400',
+    avatar: 'from-amber-300 to-orange-400',
+    ringTrack: 'text-amber-50',
+    ringActive: 'text-amber-400',
+    ringText: 'text-amber-600',
+    tokenText: 'text-amber-900',
+    chipBg: 'bg-amber-50',
+    chipText: 'text-amber-700',
+    chipHover: 'hover:bg-amber-100',
+    cardBorder: 'border-amber-100',
+    cardBorderHover: 'hover:border-amber-200',
+    bellActiveBg: 'bg-amber-500',
+    bellActiveHover: 'hover:bg-amber-600',
+  },
+  {
+    bar: 'from-violet-300 to-purple-400',
+    avatar: 'from-violet-300 to-purple-400',
+    ringTrack: 'text-violet-50',
+    ringActive: 'text-violet-400',
+    ringText: 'text-violet-600',
+    tokenText: 'text-violet-900',
+    chipBg: 'bg-violet-50',
+    chipText: 'text-violet-700',
+    chipHover: 'hover:bg-violet-100',
+    cardBorder: 'border-violet-100',
+    cardBorderHover: 'hover:border-violet-200',
+    bellActiveBg: 'bg-violet-500',
+    bellActiveHover: 'hover:bg-violet-600',
+  },
+  {
+    bar: 'from-cyan-300 to-teal-400',
+    avatar: 'from-cyan-300 to-teal-400',
+    ringTrack: 'text-cyan-50',
+    ringActive: 'text-cyan-400',
+    ringText: 'text-cyan-600',
+    tokenText: 'text-cyan-900',
+    chipBg: 'bg-cyan-50',
+    chipText: 'text-cyan-700',
+    chipHover: 'hover:bg-cyan-100',
+    cardBorder: 'border-cyan-100',
+    cardBorderHover: 'hover:border-cyan-200',
+    bellActiveBg: 'bg-cyan-500',
+    bellActiveHover: 'hover:bg-cyan-600',
+  },
+];
+
+function hashIndex(s: string, mod: number) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h) % mod;
+}
 
 function formatToken(token: string, digits: number) {
   if (digits === 6) return token.slice(0, 3) + ' ' + token.slice(3);
@@ -48,6 +163,10 @@ export default function CardOtpShow({
     notifyEnabledRef.current = notifyEnabled;
   }, [notifyEnabled]);
 
+  const palette = useMemo(
+    () => PALETTES[hashIndex(id || title || secret, PALETTES.length)],
+    [id, title, secret],
+  );
   const initial = (issuer || title || '?').trim().charAt(0).toUpperCase();
 
   const calcRemaining = () => {
@@ -152,16 +271,22 @@ export default function CardOtpShow({
     <div className="group relative w-full" onClick={onCopy} role="button" tabIndex={0}>
       {contextHolder}
       <div
-        className="relative h-full overflow-hidden rounded-2xl bg-white shadow-sm border border-blue-100
-                   transition-all duration-300
-                   hover:shadow-xl hover:-translate-y-1 hover:border-blue-200
-                   cursor-pointer"
+        className={`relative h-full overflow-hidden rounded-2xl bg-white shadow-sm border
+                    transition-all duration-300
+                    hover:shadow-xl hover:-translate-y-1 cursor-pointer
+                    ${palette.cardBorder} ${palette.cardBorderHover}`}
       >
         {/* top accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-blue-600" />
+        <div className={`h-1 w-full bg-gradient-to-r ${palette.bar}`} />
 
         {/* notify toggle (top-right) */}
-        <Tooltip title={notifyEnabled ? '点击关闭通知' : '点击开启:每次刷新自动推送 Windows 通知'}>
+        <Tooltip
+          title={
+            notifyEnabled
+              ? '点击关闭:不再推送通知'
+              : '点击开启:每次刷新自动推送 Windows 通知,点通知复制'
+          }
+        >
           <button
             type="button"
             onClick={onToggleNotify}
@@ -169,8 +294,8 @@ export default function CardOtpShow({
                         w-8 h-8 rounded-full transition-all
                         ${
                           notifyEnabled
-                            ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                            : 'bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600'
+                            ? `${palette.bellActiveBg} ${palette.bellActiveHover} text-white shadow-md`
+                            : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
                         }`}
             aria-label="切换通知"
           >
@@ -182,9 +307,9 @@ export default function CardOtpShow({
           {/* header: avatar + title + account */}
           <div className="flex items-start gap-3 pr-10">
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
-                         bg-gradient-to-br from-blue-500 to-blue-700
-                         text-white font-semibold text-lg shadow-sm"
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
+                          bg-gradient-to-br ${palette.avatar}
+                          text-white font-semibold text-lg shadow-sm`}
             >
               {initial}
             </div>
@@ -202,7 +327,7 @@ export default function CardOtpShow({
           <div className="my-5 flex items-center justify-center">
             <span
               className={`font-mono tabular-nums tracking-[0.15em] text-[34px] leading-none transition-colors
-                          ${lowTime ? 'text-rose-600' : 'text-blue-900'}`}
+                          ${lowTime ? 'text-rose-600' : palette.tokenText}`}
             >
               {token ? formatToken(token, digits) : '— — —'}
             </span>
@@ -219,7 +344,7 @@ export default function CardOtpShow({
                   stroke="currentColor"
                   strokeWidth={stroke}
                   fill="none"
-                  className="text-blue-50"
+                  className={palette.ringTrack}
                 />
                 <circle
                   cx={ringSize / 2}
@@ -231,13 +356,13 @@ export default function CardOtpShow({
                   strokeLinecap="round"
                   strokeDasharray={`${dash} ${circumference}`}
                   className={`transition-[stroke-dasharray] duration-1000 ease-linear ${
-                    lowTime ? 'text-rose-500' : 'text-blue-500'
+                    lowTime ? 'text-rose-500' : palette.ringActive
                   }`}
                 />
               </svg>
               <span
                 className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold
-                            ${lowTime ? 'text-rose-600' : 'text-blue-700'}`}
+                            ${lowTime ? 'text-rose-600' : palette.ringText}`}
               >
                 {remaining}
               </span>
@@ -254,7 +379,7 @@ export default function CardOtpShow({
                           ${
                             copied
                               ? 'bg-emerald-50 text-emerald-600'
-                              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                              : `${palette.chipBg} ${palette.chipText} ${palette.chipHover}`
                           }`}
             >
               {copied ? (
