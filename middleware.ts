@@ -27,5 +27,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ['/otp/:path*', '/admin/:path*', '/api/entries/:path*', '/login'],
+  matcher: ['/admin/:path*', '/api/entries/:path*', '/login'],
 };
