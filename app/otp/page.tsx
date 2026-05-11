@@ -38,7 +38,7 @@ export default async function Index() {
               <div className="space-y-2">
                 <div className="text-gray-700 text-base">暂无 OTP 条目</div>
                 <div className="text-xs text-gray-500">
-                  <Link href="/admin" className="text-indigo-600 hover:underline">
+                  <Link href="/admin" className="text-blue-600 hover:underline">
                     登录管理后台
                   </Link>
                   &nbsp;添加你的第一条令牌
@@ -55,8 +55,8 @@ export default async function Index() {
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">我的令牌</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl md:text-2xl font-semibold text-blue-900">我的令牌</h1>
+          <p className="text-sm text-blue-700/70 mt-1">
             共 {data.length} 条 · 点击卡片即可复制当前验证码
           </p>
         </div>
@@ -66,6 +66,7 @@ export default async function Index() {
         {data.map((item) => (
           <CardOtpShow
             key={item.id}
+            id={item.id}
             title={item.title}
             secret={item.secret}
             issuer={item.issuer}

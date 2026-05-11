@@ -2,13 +2,15 @@
 
 import { authenticator } from 'otplib';
 import { HashAlgorithms } from '@otplib/core';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { message } from 'antd';
-import { CopyOutlined, CheckOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useRef } from 'react';
+import { message, Tooltip } from 'antd';
+import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined } from '@ant-design/icons';
+import { useNotifyEnabled } from '@/lib/useNotifyEnabled';
 
 type Algorithm = 'SHA1' | 'SHA256' | 'SHA512';
 
 type Props = {
+  id: string;
   title: string;
   secret: string;
   issuer?: string | null;
@@ -18,21 +20,6 @@ type Props = {
   algorithm?: Algorithm | string;
 };
 
-const HUE_PALETTE: { from: string; to: string; ring: string; chip: string }[] = [
-  { from: 'from-indigo-500', to: 'to-blue-500', ring: 'text-indigo-500', chip: 'bg-indigo-50 text-indigo-700' },
-  { from: 'from-emerald-500', to: 'to-teal-500', ring: 'text-emerald-500', chip: 'bg-emerald-50 text-emerald-700' },
-  { from: 'from-fuchsia-500', to: 'to-pink-500', ring: 'text-fuchsia-500', chip: 'bg-fuchsia-50 text-fuchsia-700' },
-  { from: 'from-amber-500', to: 'to-orange-500', ring: 'text-amber-500', chip: 'bg-amber-50 text-amber-700' },
-  { from: 'from-sky-500', to: 'to-cyan-500', ring: 'text-sky-500', chip: 'bg-sky-50 text-sky-700' },
-  { from: 'from-violet-500', to: 'to-purple-500', ring: 'text-violet-500', chip: 'bg-violet-50 text-violet-700' },
-];
-
-function hashIndex(s: string, mod: number) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return Math.abs(h) % mod;
-}
-
 function formatToken(token: string, digits: number) {
   if (digits === 6) return token.slice(0, 3) + ' ' + token.slice(3);
   if (digits === 8) return token.slice(0, 4) + ' ' + token.slice(4);
@@ -40,6 +27,7 @@ function formatToken(token: string, digits: number) {
 }
 
 export default function CardOtpShow({
+  id,
   title,
   secret,
   issuer,
@@ -52,18 +40,41 @@ export default function CardOtpShow({
   const [token, setToken] = useState('');
   const [remaining, setRemaining] = useState(period);
   const [copied, setCopied] = useState(false);
+  const [notifyEnabled, setNotifyEnabled] = useNotifyEnabled(id);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifyEnabledRef = useRef(notifyEnabled);
+  useEffect(() => {
+    notifyEnabledRef.current = notifyEnabled;
+  }, [notifyEnabled]);
 
-  const palette = useMemo(
-    () => HUE_PALETTE[hashIndex(title || secret, HUE_PALETTE.length)],
-    [title, secret],
-  );
   const initial = (issuer || title || '?').trim().charAt(0).toUpperCase();
 
   const calcRemaining = () => {
     const now = Math.floor(Date.now() / 1000);
     return period - (now % period);
+  };
+
+  const pushNotification = (tokenValue: string) => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    const formatted = formatToken(tokenValue, digits);
+    const n = new Notification(title, {
+      body: `${formatted}\n点击通知复制到剪贴板`,
+      tag: `otp-${id}`,
+      icon: '/favicon.ico',
+      silent: true,
+    });
+    n.onclick = async () => {
+      try {
+        window.focus();
+        n.close();
+        await navigator.clipboard.writeText(tokenValue);
+        messageApi.success({ content: `已复制 ${tokenValue}`, duration: 1.5 });
+      } catch {
+        messageApi.error('复制失败,请手动复制');
+      }
+    };
   };
 
   const refreshToken = () => {
@@ -76,6 +87,9 @@ export default function CardOtpShow({
     };
     const next = authenticator.generate(secret);
     setToken(next);
+    if (notifyEnabledRef.current) {
+      pushNotification(next);
+    }
     const r = calcRemaining();
     setRemaining(r);
     timeoutRef.current = setTimeout(refreshToken, r * 1000);
@@ -102,6 +116,30 @@ export default function CardOtpShow({
     }
   };
 
+  const onToggleNotify = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (notifyEnabled) {
+      setNotifyEnabled(false);
+      messageApi.info(`已关闭 ${title} 的通知`);
+      return;
+    }
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      messageApi.error('当前浏览器不支持系统通知');
+      return;
+    }
+    let perm = Notification.permission;
+    if (perm === 'default') {
+      perm = await Notification.requestPermission();
+    }
+    if (perm !== 'granted') {
+      messageApi.warning('通知权限被拒绝,请到浏览器站点设置中开启');
+      return;
+    }
+    setNotifyEnabled(true);
+    messageApi.success(`已开启 ${title} 的通知`);
+    if (token) pushNotification(token);
+  };
+
   const ringSize = 44;
   const stroke = 4;
   const radius = (ringSize - stroke) / 2;
@@ -114,21 +152,39 @@ export default function CardOtpShow({
     <div className="group relative w-full" onClick={onCopy} role="button" tabIndex={0}>
       {contextHolder}
       <div
-        className={`relative h-full overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100
-                    transition-all duration-300
-                    hover:shadow-xl hover:-translate-y-1 hover:border-gray-200
-                    cursor-pointer`}
+        className="relative h-full overflow-hidden rounded-2xl bg-white shadow-sm border border-blue-100
+                   transition-all duration-300
+                   hover:shadow-xl hover:-translate-y-1 hover:border-blue-200
+                   cursor-pointer"
       >
         {/* top accent bar */}
-        <div className={`h-1 w-full bg-gradient-to-r ${palette.from} ${palette.to}`} />
+        <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-blue-600" />
+
+        {/* notify toggle (top-right) */}
+        <Tooltip title={notifyEnabled ? '点击关闭通知' : '点击开启:每次刷新自动推送 Windows 通知'}>
+          <button
+            type="button"
+            onClick={onToggleNotify}
+            className={`absolute top-3 right-3 z-10 inline-flex items-center justify-center
+                        w-8 h-8 rounded-full transition-all
+                        ${
+                          notifyEnabled
+                            ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+                            : 'bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600'
+                        }`}
+            aria-label="切换通知"
+          >
+            {notifyEnabled ? <BellFilled /> : <BellOutlined />}
+          </button>
+        </Tooltip>
 
         <div className="p-5">
           {/* header: avatar + title + account */}
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 pr-10">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
-                          bg-gradient-to-br ${palette.from} ${palette.to}
-                          text-white font-semibold text-lg shadow-sm`}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
+                         bg-gradient-to-br from-blue-500 to-blue-700
+                         text-white font-semibold text-lg shadow-sm"
             >
               {initial}
             </div>
@@ -137,7 +193,7 @@ export default function CardOtpShow({
                 {title}
               </div>
               <div className="truncate text-xs text-gray-500" title={account || issuer || ''}>
-                {account || issuer || ' '}
+                {account || issuer || ' '}
               </div>
             </div>
           </div>
@@ -146,49 +202,44 @@ export default function CardOtpShow({
           <div className="my-5 flex items-center justify-center">
             <span
               className={`font-mono tabular-nums tracking-[0.15em] text-[34px] leading-none transition-colors
-                          ${lowTime ? 'text-rose-600' : 'text-gray-900'}`}
+                          ${lowTime ? 'text-rose-600' : 'text-blue-900'}`}
             >
               {token ? formatToken(token, digits) : '— — —'}
             </span>
           </div>
 
-          {/* footer: ring + chips + copy */}
+          {/* footer: ring + copy */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative" style={{ width: ringSize, height: ringSize }}>
-                <svg width={ringSize} height={ringSize} className="-rotate-90">
-                  <circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={radius}
-                    stroke="currentColor"
-                    strokeWidth={stroke}
-                    fill="none"
-                    className="text-gray-100"
-                  />
-                  <circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={radius}
-                    stroke="currentColor"
-                    strokeWidth={stroke}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${dash} ${circumference}`}
-                    className={`transition-[stroke-dasharray] duration-1000 ease-linear ${
-                      lowTime ? 'text-rose-500' : palette.ring
-                    }`}
-                  />
-                </svg>
-                <span
-                  className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold
-                              ${lowTime ? 'text-rose-600' : 'text-gray-700'}`}
-                >
-                  {remaining}
-                </span>
-              </div>
-              <span className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${palette.chip}`}>
-                {String(algorithm).toUpperCase()} · {digits}
+            <div className="relative" style={{ width: ringSize, height: ringSize }}>
+              <svg width={ringSize} height={ringSize} className="-rotate-90">
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  stroke="currentColor"
+                  strokeWidth={stroke}
+                  fill="none"
+                  className="text-blue-50"
+                />
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  stroke="currentColor"
+                  strokeWidth={stroke}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${dash} ${circumference}`}
+                  className={`transition-[stroke-dasharray] duration-1000 ease-linear ${
+                    lowTime ? 'text-rose-500' : 'text-blue-500'
+                  }`}
+                />
+              </svg>
+              <span
+                className={`absolute inset-0 flex items-center justify-center text-[11px] font-semibold
+                            ${lowTime ? 'text-rose-600' : 'text-blue-700'}`}
+              >
+                {remaining}
               </span>
             </div>
 
@@ -203,7 +254,7 @@ export default function CardOtpShow({
                           ${
                             copied
                               ? 'bg-emerald-50 text-emerald-600'
-                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
                           }`}
             >
               {copied ? (
