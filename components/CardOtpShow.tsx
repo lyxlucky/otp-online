@@ -278,7 +278,7 @@ export default function CardOtpShow({
       {contextHolder}
       <div
         className={`relative h-full overflow-hidden rounded-2xl bg-white shadow-sm border
-                    transition-all duration-300
+                    transition-[transform,box-shadow,border-color] duration-200 ease-out
                     hover:shadow-xl hover:-translate-y-1 cursor-pointer
                     ${palette.cardBorder} ${palette.cardBorderHover}`}
       >
@@ -394,9 +394,7 @@ export default function CardOtpShow({
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${dash} ${circumference}`}
-                  className={`transition-[stroke-dasharray] duration-1000 ease-linear ${
-                    lowTime ? 'text-rose-500' : palette.ringActive
-                  }`}
+                  className={lowTime ? 'text-rose-500' : palette.ringActive}
                 />
               </svg>
               <span
