@@ -18,9 +18,16 @@ export const entryCreateSchema = z.object({
   digits: z.coerce.number().int().min(6).max(8).optional(),
   period: z.coerce.number().int().min(15).max(120).optional(),
   sortOrder: z.coerce.number().int().optional(),
+  favorite: z.coerce.boolean().optional(),
 });
 
 export const entryUpdateSchema = entryCreateSchema.partial();
 
+export const importSchema = z.object({
+  version: z.number().int().optional(),
+  entries: z.array(entryCreateSchema).min(1, '至少导入一条').max(500),
+});
+
 export type EntryCreateInput = z.infer<typeof entryCreateSchema>;
 export type EntryUpdateInput = z.infer<typeof entryUpdateSchema>;
+export type ImportInput = z.infer<typeof importSchema>;

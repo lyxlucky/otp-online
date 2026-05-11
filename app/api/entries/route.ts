@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { asc } from 'drizzle-orm';
+import { asc, desc } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db/client';
 import { otpEntries } from '@/lib/db/schema';
@@ -17,7 +17,7 @@ export async function GET() {
   const rows = await db
     .select()
     .from(otpEntries)
-    .orderBy(asc(otpEntries.sortOrder), asc(otpEntries.createdAt));
+    .orderBy(desc(otpEntries.favorite), asc(otpEntries.sortOrder), asc(otpEntries.createdAt));
 
   const data = rows.map((r) => ({
     id: r.id,
@@ -29,6 +29,7 @@ export async function GET() {
     digits: r.digits,
     period: r.period,
     sortOrder: r.sortOrder,
+    favorite: r.favorite,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   }));
@@ -65,6 +66,7 @@ export async function POST(req: Request) {
       digits: parsed.data.digits ?? 6,
       period: parsed.data.period ?? 30,
       sortOrder: parsed.data.sortOrder ?? 0,
+      favorite: parsed.data.favorite ?? false,
     })
     .returning({ id: otpEntries.id });
 

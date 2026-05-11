@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Form,
@@ -10,11 +10,23 @@ import {
   Popconfirm,
   Select,
   Space,
+  Switch,
   Table,
   Typography,
   message,
 } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  ImportOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  StarFilled,
+  StarOutlined,
+} from '@ant-design/icons';
+import ImportModal from './ImportModal';
 
 type Entry = {
   id: string;
@@ -26,6 +38,7 @@ type Entry = {
   digits: number;
   period: number;
   sortOrder: number;
+  favorite: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -39,13 +52,16 @@ type FormValues = {
   digits?: number;
   period?: number;
   sortOrder?: number;
+  favorite?: boolean;
 };
 
 export default function AdminPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<Entry | null>(null);
+  const [search, setSearch] = useState('');
   const [form] = Form.useForm<FormValues>();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -67,10 +83,18 @@ export default function AdminPage() {
     load();
   }, []);
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return entries;
+    return entries.filter((e) =>
+      [e.title, e.issuer, e.account].some((v) => v?.toLowerCase().includes(q)),
+    );
+  }, [entries, search]);
+
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
-    form.setFieldsValue({ algorithm: 'SHA1', digits: 6, period: 30, sortOrder: 0 });
+    form.setFieldsValue({ algorithm: 'SHA1', digits: 6, period: 30, sortOrder: 0, favorite: false });
     setModalOpen(true);
   };
 
@@ -84,6 +108,7 @@ export default function AdminPage() {
       digits: row.digits,
       period: row.period,
       sortOrder: row.sortOrder,
+      favorite: row.favorite,
     });
     setModalOpen(true);
   };
@@ -126,16 +151,48 @@ export default function AdminPage() {
     await load();
   };
 
+  const onToggleFavorite = async (row: Entry) => {
+    const next = !row.favorite;
+    setEntries((cur) => cur.map((e) => (e.id === row.id ? { ...e, favorite: next } : e)));
+    const res = await fetch(`/api/entries/${row.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ favorite: next }),
+    });
+    if (!res.ok) {
+      messageApi.error('更新收藏失败');
+      setEntries((cur) => cur.map((e) => (e.id === row.id ? { ...e, favorite: !next } : e)));
+    }
+  };
+
+  const onExport = () => {
+    window.location.href = '/api/entries/export';
+  };
+
   return (
     <div>
       {contextHolder}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <Typography.Title level={4} style={{ margin: 0 }}>
           OTP 条目管理
         </Typography.Title>
-        <Space>
+        <Space wrap>
+          <Input
+            allowClear
+            prefix={<SearchOutlined />}
+            placeholder="搜索标题 / 颁发者 / 账号"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ width: 240 }}
+          />
           <Button icon={<ReloadOutlined />} onClick={load}>
             刷新
+          </Button>
+          <Button icon={<DownloadOutlined />} onClick={onExport}>
+            导出
+          </Button>
+          <Button icon={<ImportOutlined />} onClick={() => setImportOpen(true)}>
+            导入
           </Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
             新增
@@ -146,9 +203,28 @@ export default function AdminPage() {
       <Table<Entry>
         rowKey="id"
         loading={loading}
-        dataSource={entries}
+        dataSource={filtered}
         pagination={{ pageSize: 10 }}
         columns={[
+          {
+            title: '',
+            dataIndex: 'favorite',
+            width: 50,
+            render: (_, row) => (
+              <Button
+                type="text"
+                size="small"
+                icon={
+                  row.favorite ? (
+                    <StarFilled style={{ color: '#facc15' }} />
+                  ) : (
+                    <StarOutlined style={{ color: '#9ca3af' }} />
+                  )
+                }
+                onClick={() => onToggleFavorite(row)}
+              />
+            ),
+          },
           { title: '标题', dataIndex: 'title' },
           { title: '颁发者', dataIndex: 'issuer', render: (v) => v || '—' },
           { title: '账号', dataIndex: 'account', render: (v) => v || '—' },
@@ -232,9 +308,18 @@ export default function AdminPage() {
             <Form.Item name="period" label="周期(秒)" initialValue={30}>
               <InputNumber min={15} max={120} style={{ width: '100%' }} />
             </Form.Item>
+            <Form.Item name="favorite" label="收藏置顶" valuePropName="checked">
+              <Switch />
+            </Form.Item>
           </div>
         </Form>
       </Modal>
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={load}
+      />
     </div>
   );
 }

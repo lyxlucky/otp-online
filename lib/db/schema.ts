@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -19,6 +19,7 @@ export const otpEntries = pgTable('otp_entries', {
   digits: integer('digits').default(6).notNull(),
   period: integer('period').default(30).notNull(),
   sortOrder: integer('sort_order').default(0).notNull(),
+  favorite: boolean('favorite').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

@@ -4,7 +4,7 @@ import { authenticator } from 'otplib';
 import { HashAlgorithms } from '@otplib/core';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message, Tooltip } from 'antd';
-import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined } from '@ant-design/icons';
+import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNotifyEnabled } from '@/lib/useNotifyEnabled';
 
 type Algorithm = 'SHA1' | 'SHA256' | 'SHA512';
@@ -18,6 +18,8 @@ type Props = {
   digits?: number;
   period?: number;
   algorithm?: Algorithm | string;
+  favorite?: boolean;
+  onToggleFavorite?: () => void;
 };
 
 type Palette = {
@@ -150,6 +152,8 @@ export default function CardOtpShow({
   digits = 6,
   period = 30,
   algorithm = 'SHA1',
+  favorite = false,
+  onToggleFavorite,
 }: Props) {
   const [messageApi, contextHolder] = message.useMessage();
   const [token, setToken] = useState('');
@@ -279,6 +283,32 @@ export default function CardOtpShow({
         {/* top accent bar */}
         <div className={`h-1 w-full bg-gradient-to-r ${palette.bar}`} />
 
+        {/* favorite indicator (top-left) — shown when favorite, or as a toggle when handler provided */}
+        {(favorite || onToggleFavorite) && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.();
+            }}
+            disabled={!onToggleFavorite}
+            title={favorite ? '已收藏 · 点击取消置顶' : '点击收藏并置顶'}
+            className={`absolute top-3 left-3 z-10 inline-flex items-center justify-center
+                        w-8 h-8 rounded-full transition-all
+                        ${onToggleFavorite ? 'cursor-pointer' : 'cursor-default'}
+                        ${
+                          favorite
+                            ? 'text-amber-400'
+                            : onToggleFavorite
+                              ? 'text-gray-300 hover:text-amber-400'
+                              : 'hidden'
+                        }`}
+            aria-label="切换收藏"
+          >
+            {favorite ? <StarFilled /> : <StarOutlined />}
+          </button>
+        )}
+
         {/* notify toggle (top-right) */}
         <Tooltip
           title={
@@ -305,7 +335,7 @@ export default function CardOtpShow({
 
         <div className="p-5">
           {/* header: avatar + title + account */}
-          <div className="flex items-start gap-3 pr-10">
+          <div className={`flex items-start gap-3 pr-10 ${favorite || onToggleFavorite ? 'pl-10' : ''}`}>
             <div
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
                           bg-gradient-to-br ${palette.avatar}

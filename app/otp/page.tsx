@@ -1,11 +1,11 @@
 import React from 'react';
-import { asc } from 'drizzle-orm';
+import { asc, desc } from 'drizzle-orm';
 import Link from 'next/link';
-import CardOtpShow from '@/components/CardOtpShow';
 import { Empty } from 'antd';
 import { db } from '@/lib/db/client';
 import { otpEntries } from '@/lib/db/schema';
 import { decryptSecret } from '@/lib/crypto';
+import OtpGrid, { type OtpEntryView } from './OtpGrid';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,9 +16,9 @@ export default async function Index() {
   const rows = await db
     .select()
     .from(otpEntries)
-    .orderBy(asc(otpEntries.sortOrder), asc(otpEntries.createdAt));
+    .orderBy(desc(otpEntries.favorite), asc(otpEntries.sortOrder), asc(otpEntries.createdAt));
 
-  const data = rows.map((r) => ({
+  const data: OtpEntryView[] = rows.map((r) => ({
     id: r.id,
     title: r.title,
     issuer: r.issuer,
@@ -27,6 +27,7 @@ export default async function Index() {
     algorithm: r.algorithm as Algorithm,
     digits: r.digits,
     period: r.period,
+    favorite: r.favorite,
   }));
 
   if (data.length === 0) {
@@ -51,32 +52,5 @@ export default async function Index() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl md:text-2xl font-semibold text-blue-900">我的令牌</h1>
-          <p className="text-sm text-blue-700/70 mt-1">
-            共 {data.length} 条 · 点击卡片即可复制当前验证码
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {data.map((item) => (
-          <CardOtpShow
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            secret={item.secret}
-            issuer={item.issuer}
-            account={item.account}
-            digits={item.digits}
-            period={item.period}
-            algorithm={item.algorithm}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  return <OtpGrid initial={data} />;
 }

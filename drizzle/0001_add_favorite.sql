@@ -1,0 +1,1 @@
+ALTER TABLE "otp_entries" ADD COLUMN "favorite" boolean DEFAULT false NOT NULL;
