@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Metadata } from "next";
+import OtpHeader from './OtpHeader';
 
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function IndexLayout({ children }: { children: React.ReactNode })
                             <div className="w-48 bg-blue-100 h-10 rounded-md flex items-center justify-center text-blue-800">
                                 OTP管理系统
                             </div>
+                            <OtpHeader />
                         </div>
                     </div>
                 </nav>
