@@ -20,6 +20,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   ImportOutlined,
+  LockFilled,
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
@@ -39,6 +40,7 @@ type Entry = {
   period: number;
   sortOrder: number;
   favorite: boolean;
+  adminOnly: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -53,6 +55,7 @@ type FormValues = {
   period?: number;
   sortOrder?: number;
   favorite?: boolean;
+  adminOnly?: boolean;
 };
 
 export default function AdminPage() {
@@ -94,7 +97,7 @@ export default function AdminPage() {
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
-    form.setFieldsValue({ algorithm: 'SHA1', digits: 6, period: 30, sortOrder: 0, favorite: false });
+    form.setFieldsValue({ algorithm: 'SHA1', digits: 6, period: 30, sortOrder: 0, favorite: false, adminOnly: false });
     setModalOpen(true);
   };
 
@@ -109,6 +112,7 @@ export default function AdminPage() {
       period: row.period,
       sortOrder: row.sortOrder,
       favorite: row.favorite,
+      adminOnly: row.adminOnly,
     });
     setModalOpen(true);
   };
@@ -225,7 +229,14 @@ export default function AdminPage() {
               />
             ),
           },
-          { title: '标题', dataIndex: 'title' },
+          { title: '标题', dataIndex: 'title', render: (v, row) => (
+            <span className="inline-flex items-center gap-1.5">
+              {v}
+              {row.adminOnly && (
+                <LockFilled style={{ color: '#f59e0b', fontSize: 12 }} title="管理员专属" />
+              )}
+            </span>
+          ) },
           { title: '颁发者', dataIndex: 'issuer', render: (v) => v || '—' },
           { title: '账号', dataIndex: 'account', render: (v) => v || '—' },
           { title: '算法', dataIndex: 'algorithm', width: 100 },
@@ -309,6 +320,14 @@ export default function AdminPage() {
               <InputNumber min={15} max={120} style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item name="favorite" label="收藏置顶" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+            <Form.Item
+              name="adminOnly"
+              label="管理员专属"
+              valuePropName="checked"
+              tooltip="开启后此令牌仅登录管理员可见,游客在 /otp 页看不到"
+            >
               <Switch />
             </Form.Item>
           </div>

@@ -19,6 +19,7 @@ export const entryCreateSchema = z.object({
   period: z.coerce.number().int().min(15).max(120).optional(),
   sortOrder: z.coerce.number().int().optional(),
   favorite: z.coerce.boolean().optional(),
+  adminOnly: z.coerce.boolean().optional(),
 });
 
 export const entryUpdateSchema = entryCreateSchema.partial();

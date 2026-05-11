@@ -30,6 +30,7 @@ export async function GET() {
     period: r.period,
     sortOrder: r.sortOrder,
     favorite: r.favorite,
+    adminOnly: r.adminOnly,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   }));
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
       period: parsed.data.period ?? 30,
       sortOrder: parsed.data.sortOrder ?? 0,
       favorite: parsed.data.favorite ?? false,
+      adminOnly: parsed.data.adminOnly ?? false,
     })
     .returning({ id: otpEntries.id });
 

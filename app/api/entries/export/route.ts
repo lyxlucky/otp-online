@@ -28,6 +28,7 @@ export async function GET() {
     period: r.period,
     sortOrder: r.sortOrder,
     favorite: r.favorite,
+    adminOnly: r.adminOnly,
   }));
 
   const payload = {

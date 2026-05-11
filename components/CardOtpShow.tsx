@@ -4,7 +4,7 @@ import { authenticator } from 'otplib';
 import { HashAlgorithms } from '@otplib/core';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message, Tooltip } from 'antd';
-import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { BellOutlined, BellFilled, CopyOutlined, CheckOutlined, StarFilled, StarOutlined, LockFilled } from '@ant-design/icons';
 import { useNotifyEnabled } from '@/lib/useNotifyEnabled';
 
 type Algorithm = 'SHA1' | 'SHA256' | 'SHA512';
@@ -20,6 +20,7 @@ type Props = {
   algorithm?: Algorithm | string;
   favorite?: boolean;
   onToggleFavorite?: () => void;
+  adminOnly?: boolean;
 };
 
 type Palette = {
@@ -154,6 +155,7 @@ export default function CardOtpShow({
   algorithm = 'SHA1',
   favorite = false,
   onToggleFavorite,
+  adminOnly = false,
 }: Props) {
   const [messageApi, contextHolder] = message.useMessage();
   const [token, setToken] = useState('');
@@ -344,8 +346,15 @@ export default function CardOtpShow({
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[15px] font-semibold text-gray-900" title={title}>
-                {title}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="truncate text-[15px] font-semibold text-gray-900" title={title}>
+                  {title}
+                </div>
+                {adminOnly && (
+                  <Tooltip title="管理员专属:仅登录后可见">
+                    <LockFilled className="text-amber-500 text-xs shrink-0" />
+                  </Tooltip>
+                )}
               </div>
               <div className="truncate text-xs text-gray-500" title={account || issuer || ''}>
                 {account || issuer || ' '}

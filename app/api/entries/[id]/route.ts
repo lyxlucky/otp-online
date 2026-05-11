@@ -36,6 +36,7 @@ export async function PATCH(req: Request, { params }: Params) {
   if (v.period !== undefined) patch.period = v.period;
   if (v.sortOrder !== undefined) patch.sortOrder = v.sortOrder;
   if (v.favorite !== undefined) patch.favorite = v.favorite;
+  if (v.adminOnly !== undefined) patch.adminOnly = v.adminOnly;
   if (v.secret !== undefined) {
     const enc = encryptSecret(v.secret);
     patch.secretCipher = enc.cipher;

@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       period: e.period ?? 30,
       sortOrder: e.sortOrder ?? 0,
       favorite: e.favorite ?? false,
+      adminOnly: e.adminOnly ?? false,
     };
   });
 

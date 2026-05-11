@@ -1,7 +1,8 @@
 import React from 'react';
-import { asc, desc } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { Empty } from 'antd';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db/client';
 import { otpEntries } from '@/lib/db/schema';
 import { decryptSecret } from '@/lib/crypto';
@@ -13,10 +14,23 @@ export const runtime = 'nodejs';
 type Algorithm = 'SHA1' | 'SHA256' | 'SHA512';
 
 export default async function Index() {
-  const rows = await db
-    .select()
-    .from(otpEntries)
-    .orderBy(desc(otpEntries.favorite), asc(otpEntries.sortOrder), asc(otpEntries.createdAt));
+  const session = await auth();
+  const isAuthed = !!session?.user;
+
+  const baseQuery = db.select().from(otpEntries);
+  const rows = isAuthed
+    ? await baseQuery.orderBy(
+        desc(otpEntries.favorite),
+        asc(otpEntries.sortOrder),
+        asc(otpEntries.createdAt),
+      )
+    : await baseQuery
+        .where(eq(otpEntries.adminOnly, false))
+        .orderBy(
+          desc(otpEntries.favorite),
+          asc(otpEntries.sortOrder),
+          asc(otpEntries.createdAt),
+        );
 
   const data: OtpEntryView[] = rows.map((r) => ({
     id: r.id,
@@ -28,6 +42,7 @@ export default async function Index() {
     digits: r.digits,
     period: r.period,
     favorite: r.favorite,
+    adminOnly: r.adminOnly,
   }));
 
   if (data.length === 0) {

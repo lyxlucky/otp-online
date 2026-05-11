@@ -20,6 +20,7 @@ export const otpEntries = pgTable('otp_entries', {
   period: integer('period').default(30).notNull(),
   sortOrder: integer('sort_order').default(0).notNull(),
   favorite: boolean('favorite').default(false).notNull(),
+  adminOnly: boolean('admin_only').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

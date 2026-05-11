@@ -1,0 +1,1 @@
+ALTER TABLE "otp_entries" ADD COLUMN "admin_only" boolean DEFAULT false NOT NULL;
