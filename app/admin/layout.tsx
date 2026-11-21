@@ -1,19 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from 'antd';
-import { LogoutOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { LogoutOutlined, AppstoreOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { signOut, useSession } from 'next-auth/react';
+import SecurityModal from './SecurityModal';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
+  const [securityOpen, setSecurityOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-blue-50">
       <nav className="bg-white/70 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <div className="w-48 bg-blue-100 h-10 rounded-md flex items-center justify-center text-blue-800">
                 OTP 管理后台
@@ -26,6 +28,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="text-gray-700 text-sm">
                 {session?.user?.name ? `欢迎, ${session.user.name}` : null}
               </span>
+              <Button icon={<SafetyCertificateOutlined />} onClick={() => setSecurityOpen(true)}>
+                账户安全
+              </Button>
               <Button
                 icon={<LogoutOutlined />}
                 onClick={() => signOut({ callbackUrl: '/login' })}
@@ -42,6 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
+      {securityOpen && <SecurityModal onClose={() => setSecurityOpen(false)} />}
 
       <footer className="py-4 text-center text-sm text-gray-600 bg-white/50 backdrop-blur-sm">
         OTP Online © {new Date().getFullYear()} Created by Mr.liao

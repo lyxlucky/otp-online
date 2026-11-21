@@ -26,6 +26,8 @@ export const entryUpdateSchema = entryCreateSchema.partial();
 
 export const importSchema = z.object({
   version: z.number().int().optional(),
+  skipDuplicates: z.boolean().optional(),
+  restore: z.object({ id: z.uuid(), offset: z.number().int().nonnegative().max(100_000) }).optional(),
   entries: z.array(entryCreateSchema).min(1, '至少导入一条').max(500),
 });
 

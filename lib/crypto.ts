@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'crypto';
 
 const ALGO = 'aes-256-gcm';
 
@@ -17,6 +17,13 @@ export type EncryptedSecret = {
   iv: string;
   tag: string;
 };
+
+export function getRestoreKey(secret: string, algorithm: string, digits: number, period: number) {
+  const normalized = secret.replace(/\s+/g, '').toUpperCase().replace(/=+$/, '');
+  return createHmac('sha256', getKey())
+    .update(JSON.stringify(['otp-restore', normalized, algorithm, digits, period]))
+    .digest('base64url');
+}
 
 export function encryptSecret(plain: string): EncryptedSecret {
   const iv = randomBytes(12);

@@ -37,6 +37,9 @@ export async function PATCH(req: Request, { params }: Params) {
   if (v.sortOrder !== undefined) patch.sortOrder = v.sortOrder;
   if (v.favorite !== undefined) patch.favorite = v.favorite;
   if (v.adminOnly !== undefined) patch.adminOnly = v.adminOnly;
+  if (v.secret !== undefined || v.algorithm !== undefined || v.digits !== undefined || v.period !== undefined) {
+    patch.restoreKey = null;
+  }
   if (v.secret !== undefined) {
     const enc = encryptSecret(v.secret);
     patch.secretCipher = enc.cipher;

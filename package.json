@@ -19,6 +19,8 @@
     "@ant-design/icons": "^5.6.0",
     "@ant-design/nextjs-registry": "^1.0.2",
     "@neondatabase/serverless": "^1.1.0",
+    "@otp-online/webauthn-browser": "npm:@simplewebauthn/browser@^13.3.0",
+    "@otp-online/webauthn-server": "npm:@simplewebauthn/server@^13.3.3",
     "antd": "^5.23.2",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",

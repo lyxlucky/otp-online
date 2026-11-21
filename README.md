@@ -11,8 +11,8 @@ Manage time-based one-time passwords (TOTP) in your browser and host your own in
 | Page | What you can do |
 | --- | --- |
 | `/otp` | Generate codes in the browser, search entries, pin favorites, and copy codes. |
-| `/admin` | Add, edit, delete, and reorder entries. Import by pasting an `otpauth://totp/…` link or scanning a QR code. Export entries as a JSON backup. |
-| `/login` | Sign in with your administrator credentials to manage entries and view admin-only tokens. |
+| `/admin` | Manage entries, import by link or QR code, export and restore encrypted backups, and manage Passkeys and recovery codes. |
+| `/login` | Sign in with your password, a Passkey, or a one-time recovery code. |
 
 QR scanning requires camera access and a browser that supports `BarcodeDetector`.
 
@@ -60,6 +60,14 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 
 - New entries are visible to guests by default. Enable the admin-only setting for private entries. The browser receives the secrets for entries it can view so that it can generate codes.
 - The database encrypts TOTP secrets with AES-256-GCM. Keep the original `ENCRYPTION_KEY` to decrypt existing entries.
-- Exported `otp-backup-*.json` files contain plaintext TOTP secrets. Keep backups and real environment values outside the repository.
+- In the admin dashboard, use **Export backup** to encrypt a JSON file in your browser with a separate passphrase. Use **Restore backup** to preview and import it into any instance. Keep the passphrase separately. The restore screen also accepts earlier plaintext exports.
+- Restore preserves entry visibility and other settings. **Skip duplicates** matches by TOTP secret, algorithm, digit count, and period. Backups contain OTP entries only. Administrator credentials, Passkeys, and recovery codes stay with the original instance.
+- The raw export API returns plaintext for older clients. Store these legacy exports privately.
+
+## Passkeys and recovery codes
+
+Sign in with your password and open **Account security** in the admin dashboard. You can bind a Passkey or generate eight one-time recovery codes after confirming your password. Save the codes offline when they appear. Generating a new set invalidates the previous one.
+
+Passkeys require HTTPS or `http://localhost` for local development. Register and use them on the same domain. For deployments behind a reverse proxy, set `AUTH_URL` to the public site URL if the proxy rewrites the request origin.
 
 Built with Next.js 15, React 19, Ant Design 5, Tailwind CSS, Auth.js, Drizzle ORM, and Neon PostgreSQL.

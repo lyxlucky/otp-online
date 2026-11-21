@@ -28,6 +28,7 @@ import {
   StarOutlined,
 } from '@ant-design/icons';
 import ImportModal from './ImportModal';
+import BackupModal from './BackupModal';
 
 type Entry = {
   id: string;
@@ -63,6 +64,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [backupMode, setBackupMode] = useState<'export' | 'restore'>();
   const [editing, setEditing] = useState<Entry | null>(null);
   const [search, setSearch] = useState('');
   const [form] = Form.useForm<FormValues>();
@@ -169,10 +171,6 @@ export default function AdminPage() {
     }
   };
 
-  const onExport = () => {
-    window.location.href = '/api/entries/export';
-  };
-
   return (
     <div>
       {contextHolder}
@@ -192,8 +190,11 @@ export default function AdminPage() {
           <Button icon={<ReloadOutlined />} onClick={load}>
             刷新
           </Button>
-          <Button icon={<DownloadOutlined />} onClick={onExport}>
-            导出
+          <Button icon={<DownloadOutlined />} onClick={() => setBackupMode('export')}>
+            导出备份
+          </Button>
+          <Button onClick={() => setBackupMode('restore')}>
+            恢复备份
           </Button>
           <Button icon={<ImportOutlined />} onClick={() => setImportOpen(true)}>
             导入
@@ -334,6 +335,18 @@ export default function AdminPage() {
         </Form>
       </Modal>
 
+      {backupMode && (
+        <BackupModal mode={backupMode}
+          onClose={() => {
+            setBackupMode(undefined);
+            if (backupMode === 'restore') void load();
+          }}
+          onRestored={(imported, skipped) => {
+            messageApi.success(`恢复 ${imported} 条，跳过 ${skipped} 条`);
+            setBackupMode(undefined);
+            void load();
+          }} />
+      )}
       <ImportModal
         open={importOpen}
         onClose={() => setImportOpen(false)}

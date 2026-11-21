@@ -6,6 +6,8 @@ import { db } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { loginSchema } from '@/lib/validations';
 import { authConfig } from '@/lib/auth.config';
+import { verifyPasskeyLogin } from '@/lib/passkeys';
+import { consumeRecoveryCode } from '@/lib/recovery-codes';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -31,6 +33,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!ok) return null;
         return { id: user.id, name: user.username };
       },
+    }),
+    Credentials({
+      id: 'passkey',
+      name: 'Passkey',
+      credentials: { assertion: {} },
+      authorize: (raw, request) => verifyPasskeyLogin(request, raw.assertion),
+    }),
+    Credentials({
+      id: 'recovery-code',
+      name: 'Recovery code',
+      credentials: { username: {}, code: {} },
+      authorize: (raw) => consumeRecoveryCode(raw.username, raw.code),
     }),
   ],
 });
