@@ -71,3 +71,7 @@ Sign in with your password and open **Account security** in the admin dashboard.
 Passkeys require HTTPS or `http://localhost` for local development. Register and use them on the same domain. For deployments behind a reverse proxy, set `AUTH_URL` to the public site URL if the proxy rewrites the request origin.
 
 Built with Next.js 15, React 19, Ant Design 5, Tailwind CSS, Auth.js, Drizzle ORM, and Neon PostgreSQL.
+
+## License
+
+Released under the [MIT License](./LICENSE).

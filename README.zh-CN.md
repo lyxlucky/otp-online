@@ -71,3 +71,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 Passkey 需要 HTTPS，本地开发可使用 `http://localhost`。绑定和登录时请使用同一域名。如果反向代理改写了请求来源，可将 `AUTH_URL` 设置为站点的公开 URL。
 
 技术栈为 Next.js 15、React 19、Ant Design 5、Tailwind CSS、Auth.js、Drizzle ORM 和 Neon PostgreSQL。
+
+## 许可证
+
+本项目采用 [MIT 许可证](./LICENSE)。
