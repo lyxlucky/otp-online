@@ -1,3 +1,10 @@
+# Hidden directories, with exceptions for shared project files
+.*/
+!/.github/
+!/.well-known/
+!/public/.well-known/
+!/.yarn/
+
 # Dependencies
 node_modules/
 /.pnp
@@ -9,7 +16,6 @@ node_modules/
 !/.yarn/versions/
 
 # Build, generated files, and test output
-/.next/
 /out/
 /build/
 /coverage/
@@ -24,12 +30,6 @@ next-env.d.ts
 *.pem
 *.key
 otp-backup-*.json
-
-# Local deployment and tooling
-/.vercel/
-/.claude/settings.local.json
-/.idea/
-/.vscode/*.local.json
 
 # Logs and OS metadata
 *.log
