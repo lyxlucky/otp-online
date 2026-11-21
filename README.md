@@ -1,5 +1,7 @@
 # OTP Online
 
+[简体中文](./README.zh-CN.md)
+
 OTP Online is a self-hostable tool for managing time-based one-time passwords (TOTP). It uses Next.js 15, React 19, Ant Design 5, and Tailwind CSS, with Auth.js for sign-in and Drizzle ORM for Neon PostgreSQL.
 
 ## Features
